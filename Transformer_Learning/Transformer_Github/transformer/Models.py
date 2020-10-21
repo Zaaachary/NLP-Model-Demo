@@ -25,7 +25,7 @@ class PositionalEncoding(nn.Module):
     def __init__(self, d_hid, n_position=200):
         super(PositionalEncoding, self).__init__()
 
-        # Not a parameter
+        # Not a parameter  向模块添加持久缓冲区,注册不应视为模型参数的缓冲区
         self.register_buffer('pos_table', self._get_sinusoid_encoding_table(n_position, d_hid))
 
     def _get_sinusoid_encoding_table(self, n_position, d_hid):
@@ -106,8 +106,7 @@ class Decoder(nn.Module):
         dec_output = self.layer_norm(dec_output)
 
         for dec_layer in self.layer_stack:
-            dec_output, dec_slf_attn, dec_enc_attn = dec_layer(
-                dec_output, enc_output, slf_attn_mask=trg_mask, dec_enc_attn_mask=src_mask)
+            dec_output, dec_slf_attn, dec_enc_attn = dec_layer(dec_output, enc_output, slf_attn_mask=trg_mask, dec_enc_attn_mask=src_mask)
             dec_slf_attn_list += [dec_slf_attn] if return_attns else []
             dec_enc_attn_list += [dec_enc_attn] if return_attns else []
 

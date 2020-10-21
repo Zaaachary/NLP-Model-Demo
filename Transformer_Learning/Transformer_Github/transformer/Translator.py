@@ -27,13 +27,9 @@ class Translator(nn.Module):
         self.model.eval()
 
         self.register_buffer('init_seq', torch.LongTensor([[trg_bos_idx]]))
-        self.register_buffer(
-            'blank_seqs', 
-            torch.full((beam_size, max_seq_len), trg_pad_idx, dtype=torch.long))
+        self.register_buffer('blank_seqs', torch.full((beam_size, max_seq_len), trg_pad_idx, dtype=torch.long))
         self.blank_seqs[:, 0] = self.trg_bos_idx
-        self.register_buffer(
-            'len_map', 
-            torch.arange(1, max_seq_len + 1, dtype=torch.long).unsqueeze(0))
+        self.register_buffer('len_map', torch.arange(1, max_seq_len + 1, dtype=torch.long).unsqueeze(0))
 
 
     def _model_decode(self, trg_seq, enc_output, src_mask):

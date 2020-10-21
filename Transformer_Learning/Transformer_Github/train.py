@@ -21,7 +21,10 @@ from transformer.Optim import ScheduledOptim
 __author__ = "Yu-Hsiang Huang"
 
 def cal_performance(pred, gold, trg_pad_idx, smoothing=False):
-    ''' Apply label smoothing if needed '''
+    '''
+    Apply label smoothing if needed 
+    one-hot 编码 [0,1,0] -> [0.05, 0.9, 0.05]
+    '''
 
     loss = cal_loss(pred, gold, trg_pad_idx, smoothing=smoothing)
 
@@ -84,8 +87,7 @@ def train_epoch(model, training_data, optimizer, opt, device, smoothing):
         pred = model(src_seq, trg_seq)
 
         # backward and update parameters
-        loss, n_correct, n_word = cal_performance(
-            pred, gold, opt.trg_pad_idx, smoothing=smoothing) 
+        loss, n_correct, n_word = cal_performance(pred, gold, opt.trg_pad_idx, smoothing=smoothing) 
         loss.backward()
         optimizer.step_and_update_lr()
 
@@ -156,8 +158,7 @@ def train(model, training_data, validation_data, optimizer, device, opt):
         print('[ Epoch', epoch_i, ']')
 
         start = time.time()
-        train_loss, train_accu = train_epoch(
-            model, training_data, optimizer, opt, device, smoothing=opt.label_smoothing)
+        train_loss, train_accu = train_epoch(model, training_data, optimizer, opt, device, smoothing=opt.label_smoothing)
         print_performances('Training', train_loss, train_accu, start)
 
         start = time.time()
