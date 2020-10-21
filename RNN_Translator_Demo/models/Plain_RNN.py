@@ -24,6 +24,8 @@ class PlainSeq2Seq(nn.Module):
 
     def translate(self, x, x_lengths, y, max_length=10):
         _, hid = self.encoder(x, x_lengths)
+        # print(hid)
+
         preds = []
         batch_size = x.shape[0]
         # sample
@@ -32,7 +34,7 @@ class PlainSeq2Seq(nn.Module):
             # 训练的时候y是一个句子，一起decoder训练
             # 测试的时候y是个一个词一个词生成的，所以这里的y是传入的第一个单词，这里是bos
             # 同理y_lengths也是1
-            output, hid = self.decoder(y=y, y_lengths=torch.ones(batch_size).long(), hid=hid)
+            output, hid = self.decoder(y=y, y_len=torch.ones(batch_size).long(), hidden=hid)
             #刚开始循环bos作为模型的首个输入单词，后续更新y，下个预测单词的输入是上个输出单词
             # output.shape = torch.Size([1, 1, 3195])
             # hid.shape = torch.Size([1, 1, 100])
@@ -40,8 +42,8 @@ class PlainSeq2Seq(nn.Module):
             y = output.max(2)[1].view(batch_size, 1)
             # .max(2)在第三个维度上取最大值,返回最大值和对应的位置索引，[1]取出最大值所在的索引
             preds.append(y)
-        # preds = [tensor([[5]], device='cuda:0'), tensor([[24]], device='cuda:0'), ... tensor([[4]], device='cuda:0')]
-        # torch.cat(preds, 1) = tensor([[ 5, 24, 6, 22, 7, 4, 3, 4, 3, 4]], device='cuda:0')
+            # preds = [tensor([[5]], device='cuda:0'), tensor([[24]], device='cuda:0'), ... tensor([[4]], device='cuda:0')]
+            # torch.cat(preds, 1) = tensor([[ 5, 24, 6, 22, 7, 4, 3, 4, 3, 4]], device='cuda:0')
         return torch.cat(preds, 1), None
 
 
@@ -71,7 +73,8 @@ class PlainEncoder(nn.Module):
             batch_first=True, enforce_sorted=False)
         packed_out, hidden = self.rnn(packed_embedded)  # only input x, init_hidden = 0
         output, _ = nn.utils.rnn.pad_packed_sequence(packed_out, batch_first=True) # 回到padding长度
-        
+        output.contiguous()
+        hidden = hidden.contiguous()
         return output, hidden
 
 
@@ -97,5 +100,7 @@ class PlainDecoder(nn.Module):
         output, _ = nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
 
         output = F.log_softmax(self.fc(output), -1) # [batch_size, y_lengths, vocab_size]
+        output.contiguous()
+        hidden = hidden.contiguous()
         return output, hidden
 
