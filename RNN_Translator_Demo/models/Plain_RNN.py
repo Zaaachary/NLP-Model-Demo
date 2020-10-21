@@ -64,11 +64,14 @@ class PlainEncoder(nn.Module):
         hidden: [num_layers=1, batch, hidden_size]
         '''
         x_embedded = self.dropout(self.embedding(x))
+
         # 为了rnn时能取到真实长度的最后状态，先pack_padded_sequence进行处理
         packed_embedded = nn.utils.rnn.pack_padded_sequence(
-            x_embedded, x_len.long().data.numpy(), batch_first=True, enforce_sorted=False)
+            x_embedded, x_len.long().cpu().data.numpy(),  # 因为转到 Numpy 所以需要cpu
+            batch_first=True, enforce_sorted=False)
         packed_out, hidden = self.rnn(packed_embedded)  # only input x, init_hidden = 0
         output, _ = nn.utils.rnn.pad_packed_sequence(packed_out, batch_first=True) # 回到padding长度
+        
         return output, hidden
 
 
@@ -88,7 +91,8 @@ class PlainDecoder(nn.Module):
         y = self.dropout(self.embedding(y))
 
         packed_seq = nn.utils.rnn.pack_padded_sequence(
-            y, y_len.long().data.numpy(), batch_first=True, enforce_sorted=False)
+            y, y_len.long().cpu().data.numpy(),   # 因为转到 Numpy 所以需要cpu
+            batch_first=True, enforce_sorted=False)
         out, hidden = self.rnn(packed_seq, hidden)
         output, _ = nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
 
