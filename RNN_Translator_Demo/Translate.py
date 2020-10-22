@@ -5,6 +5,7 @@
 @Contact :   li_zaaachary@163.com
 @Dscpt   :   
 """
+import random
 
 import torch
 
@@ -23,7 +24,7 @@ def translate_dev(i):
     bos = torch.Tensor([[cn2idx["BOS"]]]).long().to(device)  # shape:[1,1], [[2]]
     
     # y_lengths: [[2]], 一个句子
-    translation, attn = model.translate(mb_x, mb_x_len, bos,)  # [1, 10]
+    translation, attn = model.translate(mb_x, mb_x_len, bos)  # [1, 10]
     # 映射成中文
     translation = [idx2cn[i] for i in translation.data.cpu().numpy().reshape(-1)]
     trans = []
@@ -55,12 +56,15 @@ if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     dropout, hidden_size = 0.2, 100
     # define model
-    encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
-    decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
+    # encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
+    # decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
+    encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, 2, dropout)
+    decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, 2, dropout)
     model = Plain_RNN.PlainSeq2Seq(encoder, decoder)
 
+    model.to(device)
     # 导入训练好模型
-    model.load_state_dict(torch.load('./checkpoint/Plain_RNN.pt', map_location=device))
+    model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt', map_location=device))
     for i in range(100, 120):
         translate_dev(i)
         print()

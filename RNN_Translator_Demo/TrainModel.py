@@ -12,8 +12,8 @@ from PrepareData import *
 
 
 def train(model, data, loss_fn, optimizer, num_epochs=11):
-    model.train() # 训练模式
     for epoch in range(num_epochs):
+        model.train() # 训练模式
         total_num_words = total_loss = 0.
         for it, (mb_x, mb_x_len, mb_y, mb_y_len) in enumerate(data):
             mb_x = torch.from_numpy(mb_x).to(device).long()
@@ -42,7 +42,7 @@ def train(model, data, loss_fn, optimizer, num_epochs=11):
                 # print("Epoch", epoch, "Training loss", total_loss / total_num_words)
         if epoch % 5 == 0:
             evaluate(model, dev_data)
-            torch.save(model.state_dict(), './checkpoint/Plain_RNN_temp.pt')
+            torch.save(model.state_dict(), './checkpoint/Plain_RNN2.pt')
 
 def evaluate(model, data):
     model.eval()
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     train_en, train_cn = sentences2idx(train_en_w, train_cn_w, en2idx, cn2idx, len_sort=False)
     dev_en, dev_cn = sentences2idx(dev_en_w, dev_cn_w, en2idx, cn2idx, len_sort=False)
     # generate batches
-    batch_size = 64
+    batch_size = 128
     train_data = gen_examples(train_en, train_cn, batch_size)
     dev_data = gen_examples(dev_en, dev_cn, batch_size)
 
@@ -89,12 +89,14 @@ if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     dropout, hidden_size = 0.2, 100
     # define model
-    encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
-    decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
+    encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, 2, dropout)
+    decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, 2, dropout)
+    # encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
+    # decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
     model = Plain_RNN.PlainSeq2Seq(encoder, decoder)
     model = model.to(device)
     # define loss_function and optimizer
     loss_fn = Criterion.LanguageModelCriterion()
     optimizer = torch.optim.Adam(model.parameters())
     
-    train(model, train_data, loss_fn, optimizer, num_epochs=1)
+    train(model, train_data, loss_fn, optimizer, num_epochs=100)
