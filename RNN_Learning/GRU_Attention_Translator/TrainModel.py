@@ -85,7 +85,11 @@ if __name__ == "__main__":
     dev_data = data['dev_data']
 
     # ===== TRAIN MODEL ===== #
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = 'cpu'
+    if torch.cuda.is_available():
+        device = 'cuda' 
+        torch.cuda.set_device(0)
+
     # define model
     dropout, hidden_size = 0.05, 100
     encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, 2, dropout)
