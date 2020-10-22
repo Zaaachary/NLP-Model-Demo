@@ -9,7 +9,7 @@ import random
 
 import torch
 
-from models import Plain_RNN, Criterion
+from models import Plain_GRU, Criterion
 from PrepareData import *
 
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     model.eval()
     # 导入训练好模型
     for i in range(10):
-        i = random.randint(0, len(dev_en))
+        # i = random.randint(0, len(dev_en))
         en_sent = " ".join([idx2en[w] for w in dev_en[i]][1:-1])  #原来的英文
         print('{: <20}:'.format('original sentence'), en_sent)
         cn_sent = " ".join([idx2cn[w] for w in dev_cn[i]][1:-1])  #原来的中文

@@ -7,7 +7,7 @@
 """
 import torch
 
-from models import Plain_RNN, Criterion
+from models import Plain_GRU, Criterion, GRU_Attention
 from PrepareData import *
 
 global device
@@ -30,7 +30,7 @@ def train(model, data, loss_fn, optimizer, num_epochs=11):
             mb_pred, attn = model(mb_x, mb_x_len, mb_input, mb_y_len)
             # [mb_y_len.max()]->[1, mb_y_len.max()]
             mb_out_mask = torch.arange(mb_y_len.max().item(), device=device)[None, :] < mb_y_len[:, None]
-            mb_out_mask = mb_out_mask.float()
+            mb_out_mask = mb_out_mask.bool()
             # (pre, target, mask)
             # mb_output是句子单词的索引
             loss = loss_fn(mb_pred, mb_output, mb_out_mask)
@@ -47,7 +47,8 @@ def train(model, data, loss_fn, optimizer, num_epochs=11):
                 # print("Epoch", epoch, "Training loss", total_loss / total_num_words)
         if epoch % 5 == 0:
             evaluate(model, dev_data)
-            torch.save(model.state_dict(), './checkpoint/Plain_RNN2.pt')
+            torch.save(model.state_dict(), './checkpoint/GRU_Attention.pt')
+            # torch.save(model.state_dict(), './checkpoint/Plain_RNN2.pt')
 
 def evaluate(model, data):
     model.eval()
@@ -90,10 +91,11 @@ if __name__ == "__main__":
     dev_data = data['dev_data']
 
     # ===== TRAIN MODEL ===== #
-    model = Plain_RNN.make_model(len(en2idx), len(cn2idx))
+    # model = Plain_GRU.make_model(len(en2idx), len(cn2idx))
+    model = GRU_Attention.make_model(len(en2idx), len(cn2idx))
     # model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt'))
     model.to(device)
     # define loss_function and optimizer
-    loss_fn = Criterion.LanguageModelCriterion()
+    loss_fn = Criterion.LanguageModelCriterion().to(device)
     optimizer = torch.optim.Adam(model.parameters())
-    train(model, train_data, loss_fn, optimizer, num_epochs=101)
+    train(model, train_data, loss_fn, optimizer, num_epochs=11)
