@@ -163,13 +163,13 @@ def generate():
     # test get batch
     # get_batches(100, 15)
 
-    batch_size = 64
+    batch_size = 128
     train_data = gen_examples(train_en, train_cn, batch_size)
     dev_data = gen_examples(dev_en, dev_cn, batch_size)
     data['train_data'] = train_data
     data['dev_data'] = dev_data
     print('num of batchs:', len(train_data))
-    print('maxlen of No.200 batch:', train_data[200][0][0].size)
+    print('maxlen of No.200 batch:', train_data[-1][0][0].size)
     
     return data
 

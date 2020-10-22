@@ -10,6 +10,11 @@ import torch
 from models import Plain_RNN, Criterion
 from PrepareData import *
 
+global device
+device = 'cpu'
+if torch.cuda.is_available():
+    device = 'cuda' 
+    torch.cuda.set_device(1)
 
 def train(model, data, loss_fn, optimizer, num_epochs=11):
     for epoch in range(num_epochs):
@@ -37,7 +42,7 @@ def train(model, data, loss_fn, optimizer, num_epochs=11):
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5.)
             optimizer.step()
-            if it % 100 == 0:
+            if it % 10 == 0:
                 print("Epoch: ", epoch, 'iteration', it, 'loss:', loss.item())
                 # print("Epoch", epoch, "Training loss", total_loss / total_num_words)
         if epoch % 5 == 0:
@@ -85,22 +90,17 @@ if __name__ == "__main__":
     dev_data = data['dev_data']
 
     # ===== TRAIN MODEL ===== #
-    device = 'cpu'
-    if torch.cuda.is_available():
-        device = 'cuda' 
-        torch.cuda.set_device(0)
-
     # define model
-    dropout, hidden_size = 0.05, 100
+    dropout, hidden_size = 0.2, 100
     encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, 2, dropout)
     decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, 2, dropout)
     # encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
     # decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
     model = Plain_RNN.PlainSeq2Seq(encoder, decoder)
+    # model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt', map_location=device))
+    # model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt'))
     model = model.to(device)
-    model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt', map_location=device))
     # define loss_function and optimizer
     loss_fn = Criterion.LanguageModelCriterion()
     optimizer = torch.optim.Adam(model.parameters())
-    
-    train(model, train_data, loss_fn, optimizer, num_epochs=10)
+    train(model, train_data, loss_fn, optimizer, num_epochs=101)
