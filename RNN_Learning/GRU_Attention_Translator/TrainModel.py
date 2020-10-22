@@ -71,32 +71,32 @@ def evaluate(model, data):
 
 if __name__ == "__main__":
     # ====== DATA PREPARE ===== #
-    # load word data
-    train_en_w, train_cn_w = load_data(train_file)
-    dev_en_w, dev_cn_w = load_data(dev_file)
-    # build vocabulary
-    en2idx, idx2en = build_vocab(train_en_w)
-    cn2idx, idx2cn = build_vocab(train_cn_w)
-    # trans word sentences to idx sentences
-    train_en, train_cn = sentences2idx(train_en_w, train_cn_w, en2idx, cn2idx, len_sort=False)
-    dev_en, dev_cn = sentences2idx(dev_en_w, dev_cn_w, en2idx, cn2idx, len_sort=False)
-    # generate batches
-    batch_size = 128
-    train_data = gen_examples(train_en, train_cn, batch_size)
-    dev_data = gen_examples(dev_en, dev_cn, batch_size)
+    data = autoload()
+    # unpack
+    en2idx = data['en2idx']
+    cn2idx = data['cn2idx']
+    idx2en = data['idx2en']
+    idx2cn = data['idx2cn']
+    train_en = data['train_en']
+    train_cn = data['train_cn']
+    dev_en = data['dev_en']
+    dev_cn = data['dev_cn']
+    train_data = data['train_data']
+    dev_data = data['dev_data']
 
     # ===== TRAIN MODEL ===== #
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    dropout, hidden_size = 0.2, 100
     # define model
+    dropout, hidden_size = 0.1, 100
     encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, 2, dropout)
     decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, 2, dropout)
     # encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
     # decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
     model = Plain_RNN.PlainSeq2Seq(encoder, decoder)
     model = model.to(device)
+    model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt', map_location=device))
     # define loss_function and optimizer
     loss_fn = Criterion.LanguageModelCriterion()
     optimizer = torch.optim.Adam(model.parameters())
     
-    train(model, train_data, loss_fn, optimizer, num_epochs=100)
+    train(model, train_data, loss_fn, optimizer, num_epochs=10)

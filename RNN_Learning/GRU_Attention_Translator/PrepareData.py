@@ -10,6 +10,7 @@ import os
 import sys
 import math
 import random
+import pickle
 from collections import Counter
 
 import numpy as np
@@ -22,6 +23,7 @@ import nltk
 
 train_file = './data_spcn/train.txt'
 dev_file = './data_spcn/dev.txt'
+pickle_file = './data_spcn/data.pk'
 
 
 def load_data(file_path):
@@ -118,7 +120,21 @@ def gen_examples(en_sentences, cn_sentences, batch_size):
         batches.append((x, x_len, y, y_len))
     return batches
 
-if __name__ == "__main__":
+def autoload():
+    '''
+    en2idx, cn2idx, idx2en, idx2cn,
+    '''
+    if os.path.exists(pickle_file):
+        with open(pickle_file, 'rb') as f:
+            data = pickle.load(f)
+    else:
+        data = generate()
+        with open(pickle_file, 'wb') as f:
+            pickle.dump(data, f)
+    return data
+
+def generate():
+    data = {}
     # load data
     train_en_w, train_cn_w = load_data(train_file)  # _w means word
     dev_en_w, dev_cn_w = load_data(dev_file)
@@ -128,12 +144,19 @@ if __name__ == "__main__":
     # build vocab
     en2idx, idx2en = build_vocab(train_en_w)
     cn2idx, idx2cn = build_vocab(train_cn_w)
+    data['en2idx'] = en2idx
+    data['cn2idx'] = cn2idx
+    data['idx2en'] = idx2en
+    data['idx2cn'] = idx2cn
     print('the index of "i" in en2idx is:', en2idx['i'])
 
     # sentences to idxseqences
     train_en, train_cn = sentences2idx(train_en_w, train_cn_w, en2idx, cn2idx, len_sort=False)
     dev_en, dev_cn = sentences2idx(dev_en_w, dev_cn_w, en2idx, cn2idx, len_sort=False)
-    
+    data['train_en'] = train_en
+    data['train_cn'] = train_cn
+    data['dev_en'] = dev_en
+    data['dev_cn'] = dev_cn
     print('words:', train_en_w[30], 'index:', train_en[30])
     print('words:', train_cn_w[30], 'index:', train_cn[30])
 
@@ -143,6 +166,26 @@ if __name__ == "__main__":
     batch_size = 64
     train_data = gen_examples(train_en, train_cn, batch_size)
     dev_data = gen_examples(dev_en, dev_cn, batch_size)
+    data['train_data'] = train_data
+    data['dev_data'] = dev_data
     print('num of batchs:', len(train_data))
     print('maxlen of No.200 batch:', train_data[200][0][0].size)
     
+    return data
+
+
+if __name__ == "__main__":
+    data = autoload()
+    print(data.keys())
+    
+    # unpack
+    en2idx = data['en2idx']
+    cn2idx = data['cn2idx']
+    idx2en = data['idx2en']
+    idx2cn = data['idx2cn']
+    train_en = data['train_en']
+    train_cn = data['train_cn']
+    dev_en = data['dev_en']
+    dev_cn = data['dev_cn']
+    train_data = data['train_data']
+    dev_data = data['dev_data']
