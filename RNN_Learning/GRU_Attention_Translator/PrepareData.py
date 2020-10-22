@@ -163,7 +163,7 @@ def generate():
     # test get batch
     # get_batches(100, 15)
 
-    batch_size = 128
+    batch_size = 256
     train_data = gen_examples(train_en, train_cn, batch_size)
     dev_data = gen_examples(dev_en, dev_cn, batch_size)
     data['train_data'] = train_data
