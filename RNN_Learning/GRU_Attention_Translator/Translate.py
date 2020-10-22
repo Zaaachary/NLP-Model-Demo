@@ -12,6 +12,14 @@ import torch
 from models import Plain_RNN, Criterion
 from PrepareData import *
 
+
+global device
+device = 'cpu'
+if torch.cuda.is_available():
+    device = 'cuda' 
+    torch.cuda.set_device(1)
+
+
 def translate_dev(model, dev_en):
     # 一条句子
     mb_x = torch.from_numpy(np.array(dev_en).reshape(1, -1)).long().to(device)
@@ -44,20 +52,13 @@ if __name__ == "__main__":
     dev_cn = data['dev_cn']
 
     # ===== DEFINE MODEL ===== #
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    dropout, hidden_size = 0.05, 100
-    # encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
-    # decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
-    encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, 2, dropout)
-    decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, 2, dropout)
-    model = Plain_RNN.PlainSeq2Seq(encoder, decoder)
-
-    model.to(device)
-    model.eval() # 关闭dropout
-    # 导入训练好模型
+    model = Plain_RNN.make_model(len(en2idx), len(cn2idx))
     model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt', map_location=device))
+    model.to(device)
+    model.eval()
+    # 导入训练好模型
     for i in range(10):
-        # i = random.choice()
+        i = random.randint(0, len(dev_en))
         en_sent = " ".join([idx2en[w] for w in dev_en[i]][1:-1])  #原来的英文
         print('{: <20}:'.format('original sentence'), en_sent)
         cn_sent = " ".join([idx2cn[w] for w in dev_cn[i]][1:-1])  #原来的中文

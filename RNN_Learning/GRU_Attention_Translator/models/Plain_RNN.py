@@ -109,3 +109,12 @@ class PlainDecoder(nn.Module):
         hidden = hidden.contiguous()
         return output, hidden
 
+
+def make_model(en_len, cn_len):
+    dropout, hidden_size = 0.2, 100
+    # encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
+    # decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
+    encoder = PlainEncoder(en_len, hidden_size, 2, dropout)
+    decoder = PlainDecoder(cn_len, hidden_size, 2, dropout)
+    model = PlainSeq2Seq(encoder, decoder)
+    return model

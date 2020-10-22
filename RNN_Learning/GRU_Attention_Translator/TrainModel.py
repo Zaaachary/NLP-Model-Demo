@@ -90,16 +90,9 @@ if __name__ == "__main__":
     dev_data = data['dev_data']
 
     # ===== TRAIN MODEL ===== #
-    # define model
-    dropout, hidden_size = 0.2, 100
-    encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, 2, dropout)
-    decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, 2, dropout)
-    # encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
-    # decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
-    model = Plain_RNN.PlainSeq2Seq(encoder, decoder)
-    # model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt', map_location=device))
+    model = Plain_RNN.make_model(len(en2idx), len(cn2idx))
     # model.load_state_dict(torch.load('./checkpoint/Plain_RNN2.pt'))
-    model = model.to(device)
+    model.to(device)
     # define loss_function and optimizer
     loss_fn = Criterion.LanguageModelCriterion()
     optimizer = torch.optim.Adam(model.parameters())

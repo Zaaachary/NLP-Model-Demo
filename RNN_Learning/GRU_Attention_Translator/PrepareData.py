@@ -177,7 +177,6 @@ def generate():
 if __name__ == "__main__":
     data = autoload()
     print(data.keys())
-    
     # unpack
     en2idx = data['en2idx']
     cn2idx = data['cn2idx']
