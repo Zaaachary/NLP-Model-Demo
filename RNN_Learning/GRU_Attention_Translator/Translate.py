@@ -43,10 +43,9 @@ if __name__ == "__main__":
     dev_en = data['dev_en']
     dev_cn = data['dev_cn']
 
-    # ===== TRAIN MODEL ===== #
+    # ===== DEFINE MODEL ===== #
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    dropout, hidden_size = 0.2, 100
-    # define model
+    dropout, hidden_size = 0.05, 100
     # encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, dropout)
     # decoder = Plain_RNN.PlainDecoder(len(en2idx), hidden_size, dropout)
     encoder = Plain_RNN.PlainEncoder(len(en2idx), hidden_size, 2, dropout)
